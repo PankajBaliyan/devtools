@@ -104,7 +104,7 @@ button:disabled { opacity: .6; cursor: not-allowed; }
 .tab-close { position: absolute; right: 4px; width: 20px; height: 20px; display: grid; place-items: center; border-radius: 4px; opacity: 0; }
 .workspace-tab-wrap:hover .tab-close, .workspace-tab-wrap:focus-within .tab-close { opacity: 1; }
 .tab-close:hover { background: hsl(var(--foreground) / .1); }
-.workspace-content { flex: 1; min-height: 0; overflow: auto; background: hsl(var(--card)); }
+.workspace-content { position: relative; flex: 1; min-height: 0; overflow: auto; background: hsl(var(--card)); }
 .workspace-home { padding: 40px 28px; }
 /* Relative for the same reason as .pane-body: form panels scroll, and their sr-only inputs must stay inside them. */
 .tool-panel { position: relative; }
@@ -376,6 +376,8 @@ body:has(.workspace[data-platform="darwin"]) #root,
 .html-preview-devicebar input { width: 60px; font-variant-numeric: tabular-nums; appearance: textfield; -moz-appearance: textfield; }
 .html-preview-devicebar input::-webkit-inner-spin-button, .html-preview-devicebar input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
 .html-preview-full { position: fixed; inset: 0; z-index: 60; display: flex; flex-direction: column; background: hsl(var(--background)); }
+.markdown-preview-full { position: absolute; inset: 0; z-index: 20; display: flex; flex-direction: column; background: hsl(var(--background)); }
+.markdown-preview-expanded-content { flex: 1; min-height: 0; overflow: auto; padding: 24px; }
 /* The overlay sits outside the workspace, so it clears the macOS window controls itself */
 body:has(.workspace[data-platform="darwin"]) .html-preview-full > .editor-toolbar { padding-left: 82px; }
 .copy-button[data-copied] { color: hsl(var(--success)); }

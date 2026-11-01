@@ -27,6 +27,26 @@ describe("MarkdownEditor", () => {
     });
   });
 
+  it("expands the preview inside the app and closes it with the X or Escape", () => {
+    render(
+      <div className="workspace-content">
+        <MarkdownEditor />
+      </div>,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Expand preview" }));
+    const dialog = screen.getByRole("dialog", { name: "HTML preview, expanded" });
+    expect(dialog).toHaveClass("markdown-preview-full");
+    expect(dialog.parentElement).toHaveClass("workspace-content");
+
+    fireEvent.click(screen.getByRole("button", { name: "Close preview" }));
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Expand preview" }));
+    fireEvent.keyDown(window, { key: "Escape" });
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+  });
+
   it("renders unordered lists as bullet items", async () => {
     render(<MarkdownEditor />);
 

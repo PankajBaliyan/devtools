@@ -1,8 +1,9 @@
-import { useDeferredValue, useMemo, useState } from "react";
+import { useDeferredValue, useEffect, useMemo, useState } from "react";
+import { createPortal } from "react-dom";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Eye, Code } from "lucide-react";
+import { Eye, Code, Maximize2, X } from "lucide-react";
 import { toast } from "sonner";
 import { CopyButton } from "@/components/tools/CopyButton";
 import { convertMarkdown, sanitizeHtml } from "@/utils/markdown";
@@ -44,10 +45,18 @@ function greet(name) {
 export function MarkdownEditor() {
   const [markdown, setMarkdown] = useState(defaultMarkdown);
   const [view, setView] = useState<"split" | "preview" | "source">("split");
+  const [previewExpanded, setPreviewExpanded] = useState(false);
   const deferredMarkdown = useDeferredValue(markdown);
   const html = useMemo(() => sanitizeHtml(convertMarkdown(deferredMarkdown)), [deferredMarkdown]);
 
-
+  useEffect(() => {
+    if (!previewExpanded) return;
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setPreviewExpanded(false);
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [previewExpanded]);
 
   return (
     <div className="space-y-6">
@@ -104,7 +113,18 @@ export function MarkdownEditor() {
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <label className="text-sm font-medium">HTML Preview</label>
-                  <CopyButton value={html.replace(/<br>/g, "\n")} label="Copy HTML" />
+                  <div className="flex items-center gap-1">
+                    <CopyButton value={html.replace(/<br>/g, "\n")} label="Copy HTML" />
+                    <button
+                      type="button"
+                      className="toolbar-text-button"
+                      aria-label="Expand preview"
+                      title="Expand preview"
+                      onClick={() => setPreviewExpanded(true)}
+                    >
+                      <Maximize2 className="h-4 w-4" aria-hidden="true" />
+                    </button>
+                  </div>
                 </div>
                 <div
                   className="min-h-[500px] max-h-[500px] overflow-y-auto rounded-md border border-border bg-background p-4 text-foreground prose prose-neutral max-w-none dark:prose-invert prose-headings:text-foreground prose-p:text-foreground prose-strong:text-foreground prose-code:text-foreground prose-pre:bg-muted prose-blockquote:text-muted-foreground"
@@ -115,6 +135,32 @@ export function MarkdownEditor() {
           </div>
         </CardContent>
       </Card>
+      {previewExpanded &&
+        createPortal(
+          <div className="markdown-preview-full" role="dialog" aria-modal="true" aria-label="HTML preview, expanded">
+            <div className="editor-toolbar">
+              <span className="text-sm font-medium">HTML Preview</span>
+              <div className="toolbar-actions">
+                <CopyButton value={html.replace(/<br>/g, "\n")} label="Copy HTML" />
+                <button
+                  type="button"
+                  className="toolbar-text-button"
+                  aria-label="Close preview"
+                  title="Close preview"
+                  onClick={() => setPreviewExpanded(false)}
+                  autoFocus
+                >
+                  <X className="h-4 w-4" aria-hidden="true" />
+                </button>
+              </div>
+            </div>
+            <div
+              className="markdown-preview-expanded-content prose prose-neutral max-w-none text-foreground dark:prose-invert prose-headings:text-foreground prose-p:text-foreground prose-strong:text-foreground prose-code:text-foreground prose-pre:bg-muted prose-blockquote:text-muted-foreground"
+              dangerouslySetInnerHTML={{ __html: html }}
+            />
+          </div>,
+          document.querySelector(".workspace-content") ?? document.body,
+        )}
 
       <Card>
         <CardHeader>
